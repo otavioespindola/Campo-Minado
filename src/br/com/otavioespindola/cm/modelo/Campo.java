@@ -3,6 +3,8 @@ package br.com.otavioespindola.cm.modelo;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.otavioespindola.cm.excecao.ExplosaoException;
+
 public class Campo {
 
 	private final int linha;
@@ -38,4 +40,109 @@ public class Campo {
 			return false;
 		}
 	}
+	
+	void alternarMarcacao() {
+		if (!aberto) {
+			marcado = !marcado;
+		}
+	}
+	
+	boolean abrir(){
+		if (!aberto && !marcado) {
+			aberto = true;
+			
+			if(minado) {
+				throw new ExplosaoException();
+			}
+			
+			if(vizinhacaSegura()) {
+				vizinhos.forEach(v -> v.abrir());
+			}
+			return true;			
+		} else {
+			return false;
+		}				
+	}
+	
+	boolean vizinhacaSegura() {
+		return vizinhos.stream().noneMatch( v -> v.minado);
+	}
+	
+	
+	void minar() {
+		if(!minado) {
+			minado = true;			
+		}
+	}	
+	
+	public boolean isMarcado() {
+		return marcado;
+	}
+	
+	public boolean isAberto() {
+		return aberto;
+	}
+	public boolean isFechado() {
+		return !isAberto();
+	}
+
+	public int getLinha() {
+		return linha;
+	}
+
+	public int getColuna() {
+		return coluna;
+	}
+	
+	boolean objetivoAlcancado() {
+		boolean desvendado = !minado && aberto;
+		boolean protegido = minado && marcado;
+		return desvendado || protegido;
+	}
+	
+	long minasNaVizinhanca() {
+		return vizinhos.stream().filter(v -> v.minado).count();
+	}
+	
+	void reiniciar() {
+		aberto = false;
+		minado = false;
+		marcado = false;
+	}
+	
+	public String toString() {
+		if(marcado) {
+			return "x";
+		} else if (aberto && minado) {
+			return "*";
+		} else if (aberto && minasNaVizinhanca() > 0) {
+			return Long.toString(minasNaVizinhanca());
+		} else if (aberto) {
+			return " ";
+		} else {
+			return "?";
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
